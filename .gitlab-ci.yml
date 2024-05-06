@@ -1,0 +1,14 @@
+stages:
+  - deploy
+
+deploy_production:
+  stage: deploy
+  script:
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$SSH_PRIVATE_KEY")
+    - git archive --format=tar.gz -o repository.tar.gz HEAD
+    - ssh -o StrictHostKeyChecking=no azureuser@172.205.232.115 'sudo mkdir -p /destination/path && sudo chown azureuser:azureuser /destination/path'
+    - scp -o StrictHostKeyChecking=no repository.tar.gz azureuser@172.205.232.115:/destination/path
+    - ssh -o StrictHostKeyChecking=no azureuser@172.205.232.115 'tar -xzvf /destination/path/repository.tar.gz -C /var/www/html'
+  environment:
+    name: production
